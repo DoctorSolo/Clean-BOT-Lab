@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b101b" />
+  <title>Clean BOT Lab — Laboratório de agentes com memória</title>
+  <meta name="description" content="Explore os tipos de memória de agentes de IA em um laboratório visual, com chat, modo sem memória, SQLite e Ollama local." />
+  <link rel="icon" type="image/jpeg" href="/assets/clean-bot.jpg" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+  <script defer src="/assets/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark"><img src="/assets/clean-bot.jpg" alt="Clean BOT" /></div><div class="brand-copy">Clean BOT<span> Lab</span><small>LABORATÓRIO DE AGENTES</small></div></div>
+      <nav class="top-links" aria-label="Navegação"><a href="#laboratorio" class="active">Laboratório</a><a href="#comparador">Memória × memória</a><a href="#model-arena">Arena de modelos</a><a href="#memorias">Memórias</a></nav>
+      <div class="top-status"><span class="live-dot" id="live-dot"></span><span id="connection-label">Verificando Ollama...</span><button id="help-button" class="icon-action" title="Guia de uso" aria-label="Guia de uso">?</button></div>
+    </header>
+
+    <section class="intro" id="laboratorio">
+      <div>
+        <div class="eyebrow"><span class="small-spark">◆</span> DEMONSTRAÇÃO INTERATIVA · PYTHON + OLLAMA</div>
+        <div class="hero-id"><img src="/assets/clean-bot.jpg" alt="Avatar Clean BOT"/><div><div class="unit-label">UNIDADE CB-01 / SISTEMA DE MEMÓRIA</div><h1>Clean <em>BOT</em><span class="hero-lab"> LAB</span></h1><div class="hero-tagline">Uma IA que se lembra. Ou que esquece tudo.</div></div></div>
+        <p>Ative e desative módulos, converse com o agente e observe <strong>o que ele recupera, aprende e guarda</strong> em tempo real.</p>
+      </div>
+      <div class="intro-aside">
+        <div class="intro-aside-title">FLUXO DA MEMÓRIA <span>VISUALIZAÇÃO</span></div>
+        <div class="pipeline" aria-label="Fluxo da memória">
+          <div class="pipe-node"><div class="pipe-circle">01</div><span>Mensagem</span></div><div class="pipe-line"></div>
+          <div class="pipe-node"><div class="pipe-circle">02</div><span>Busca</span></div><div class="pipe-line"></div>
+          <div class="pipe-node"><div class="pipe-circle">03</div><span>LLM</span></div><div class="pipe-line"></div>
+          <div class="pipe-node"><div class="pipe-circle">04</div><span>Escrita</span></div>
+        </div>
+        <p id="flow-desc">Selecione os módulos para acompanhar o fluxo.</p>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <aside class="panel controls-panel">
+        <div class="panel-heading"><div><div class="eyebrow">01 / CONFIGURAÇÃO</div><h2>Experimento</h2></div><span class="h2-icon">⚙</span></div>
+        <div class="section-label">MODO DE MEMÓRIA</div>
+        <div class="preset-list" id="preset-list">
+          <button class="preset active" data-preset="none"><span class="preset-symbol ghost">◌</span><span class="preset-copy"><b>Sem memória</b><small>Apenas conversa atual</small></span><span class="preset-check"></span></button>
+          <button class="preset" data-preset="working"><span class="preset-symbol work">◷</span><span class="preset-copy"><b>Trabalho</b><small>Temporária, por sessão</small></span><span class="preset-check"></span></button>
+          <button class="preset" data-preset="semantic"><span class="preset-symbol semantic">◇</span><span class="preset-copy"><b>Semântica</b><small>Fatos e preferências</small></span><span class="preset-check"></span></button>
+          <button class="preset" data-preset="episodic"><span class="preset-symbol episodic">▤</span><span class="preset-copy"><b>Episódica</b><small>Eventos e experiências</small></span><span class="preset-check"></span></button>
+          <button class="preset" data-preset="procedural"><span class="preset-symbol procedural">⌘</span><span class="preset-copy"><b>Procedural</b><small>Procedimentos e etapas</small></span><span class="preset-check"></span></button>
+          <button class="preset" data-preset="all"><span class="preset-symbol all">✦</span><span class="preset-copy"><b>Todas as memórias</b><small>Arquitetura modular completa</small></span><span class="preset-check"></span></button>
+        </div>
+        <div class="divider"></div>
+        <div class="section-label with-hint">MÓDULOS ATIVOS <span title="Selecione mais de um para criar uma combinação personalizada">ⓘ</span></div>
+        <div class="module-list" id="module-list">
+          <label class="module"><span class="dot work-bg"></span><span class="module-copy"><b>Trabalho</b><small>RAM • temporária</small></span><input type="checkbox" data-kind="working" class="switch-input"><span class="switch"></span></label>
+          <label class="module"><span class="dot semantic-bg"></span><span class="module-copy"><b>Semântica</b><small>SQLite • fatos</small></span><input type="checkbox" data-kind="semantic" class="switch-input"><span class="switch"></span></label>
+          <label class="module"><span class="dot episodic-bg"></span><span class="module-copy"><b>Episódica</b><small>SQLite • eventos</small></span><input type="checkbox" data-kind="episodic" class="switch-input"><span class="switch"></span></label>
+          <label class="module"><span class="dot procedural-bg"></span><span class="module-copy"><b>Procedural</b><small>SQLite • processos</small></span><input type="checkbox" data-kind="procedural" class="switch-input"><span class="switch"></span></label>
+        </div>
+        <div class="divider"></div>
+        <div class="section-label">MOTOR DA RESPOSTA</div>
+        <div class="field"><label for="provider">Funcionamento</label><select id="provider"><option value="ollama">Ollama (modelo real)</option><option value="simulation">Simulação didática (offline)</option></select></div>
+        <div class="field ollama-only hidden" id="model-field"><label for="model">Modelo instalado</label><select id="model"><option value="">Carregando modelos...</option></select><button type="button" id="refresh-models" class="button outline wide refresh-models">↻ Atualizar modelos</button><label for="manual-model" class="manual-label">Ou digite o nome exato</label><input id="manual-model" maxlength="100" placeholder="ex.: qwen3:4b" autocomplete="off"/><small class="muted-note">O campo manual tem prioridade.</small></div>
+        <div class="field ollama-only hidden" id="embed-field"><label for="embedding-model">Modelo de embeddings (opcional)</label><input id="embedding-model" value="embeddinggemma" placeholder="embeddinggemma" /><label class="checkrow"><input type="checkbox" id="use-embeddings" /> Busca por significado (embeddings)</label></div>
+        <label class="checkrow save-toggle"><input type="checkbox" id="auto-capture" checked /> Extrair e salvar memórias automaticamente</label>
+        <p class="aside-explain" id="provider-explain">A simulação usa regras explícitas: não gera respostas com IA. Ideal para ensaiar sem depender do Ollama.</p>
+      </aside>
+
+      <main class="center-stack">
+        <section class="panel chat-panel">
+          <div class="chat-heading"><div class="avatar-agent"><img src="/assets/clean-bot.jpg" alt=""/></div><div class="chat-heading-title"><h2>Clean BOT <span class="unit-label inline-unit">CB-01</span></h2><p><span class="status-pin"></span><span id="current-mode">Sem memória conectada</span> <span class="subtle-separator">·</span> <span id="current-provider">Ollama real</span></p></div><button id="reset-session" class="button text-button" title="Limpa conversa e memória de trabalho">↻ Nova sessão</button></div>
+          <div class="chat-messages" id="chat-messages" aria-live="polite">
+            <div class="empty-chat" id="empty-chat"><div class="empty-icon"><img src="/assets/clean-bot.jpg" alt=""/></div><h3>Clean BOT na escuta!</h3><p>Faça uma pergunta ao agente ou carregue um cenário para explorar as memórias.</p><div class="suggestion-list"><button class="suggestion" data-question="Qual linguagem de programação eu prefiro?">Qual linguagem eu prefiro? <span>↗</span></button><button class="suggestion" data-question="Como devo demonstrar o projeto na palestra?">Como devo demonstrar o projeto? <span>↗</span></button></div></div>
+          </div>
+          <form class="chat-composer" id="chat-form"><textarea id="message-input" rows="2" maxlength="1600" placeholder="Pergunte alguma coisa ao agente..." aria-label="Mensagem para o agente"></textarea><div class="composer-bottom"><span>Enter para enviar · Shift + Enter para quebrar linha</span><button class="send-button" type="submit" id="send-button"><span>Enviar</span><span class="send-arrow">↗</span></button></div></form>
+        </section>
+        <section class="panel trace-panel" id="rastreamento">
+          <div class="inline-heading"><div><div class="eyebrow">TELEMETRIA / AO VIVO</div><h3>O que aconteceu por trás?</h3></div><span class="trace-time" id="trace-time">Aguardando interação</span></div>
+          <div class="trace-steps" id="trace-steps"><span class="trace-step"><b>01</b> Busca</span><span class="trace-arrow">→</span><span class="trace-step"><b>02</b> Contexto</span><span class="trace-arrow">→</span><span class="trace-step"><b>03</b> Resposta</span><span class="trace-arrow">→</span><span class="trace-step"><b>04</b> Escrita</span></div>
+          <div class="trace-details" id="trace-details"><div class="trace-empty">As memórias recuperadas e armazenadas aparecerão aqui.</div></div>
+        </section>
+      </main>
+
+      <aside class="panel memory-panel" id="memorias">
+        <div class="panel-heading"><div><div class="eyebrow">02 / INSPEÇÃO</div><h2>Banco de memórias</h2></div><span class="h2-icon">▣</span></div>
+        <div class="stat-row"><div class="stat"><span id="stat-total">0</span><small>TOTAL</small></div><div class="stat"><span id="stat-active">0</span><small>ACESSÍVEIS</small></div><div class="stat"><span id="stat-persistent">0</span><small>NO SQLITE</small></div></div>
+        <div class="memory-bars" id="memory-bars"><span class="bar work-bg"></span><span class="bar semantic-bg"></span><span class="bar episodic-bg"></span><span class="bar procedural-bg"></span></div>
+        <div class="memory-help">As memórias persistentes continuam salvas mesmo quando você desliga um módulo.</div>
+        <div class="divider"></div>
+        <div class="memory-search-wrap"><span>⌕</span><input type="search" id="memory-search" placeholder="Buscar nas memórias..." aria-label="Buscar memórias" /></div>
+        <div class="memory-filters" id="memory-filters"><button class="filter active" data-filter="all">Todas</button><button class="filter" data-filter="working">Trabalho</button><button class="filter" data-filter="semantic">Fatos</button><button class="filter" data-filter="episodic">Eventos</button><button class="filter" data-filter="procedural">Passos</button></div>
+        <div class="memory-list" id="memory-list"><div class="memories-empty">Nenhuma memória salva ainda.</div></div>
+        <button class="button outline wide" id="open-memory-form"><span>＋</span> Adicionar memória manualmente</button>
+        <form class="memory-form hidden" id="memory-form"><label>Tipo<select id="memory-type"><option value="semantic">Semântica (fato)</option><option value="episodic">Episódica (evento)</option><option value="procedural">Procedural (procedimento)</option><option value="working">Trabalho (temporária)</option></select></label><label>Conteúdo<textarea id="memory-content" rows="3" maxlength="1200" placeholder="Descreva um fato, evento ou procedimento..."></textarea></label><div class="form-actions"><button type="button" class="button text-button" id="cancel-memory">Cancelar</button><button type="submit" class="button primary">Salvar</button></div></form>
+        <div class="divider"></div>
+        <button class="button demo-button wide" id="seed-demo">✧ Carregar cenário de exemplo</button>
+        <button class="button danger-text wide" id="wipe-demo">Limpar banco persistente</button>
+      </aside>
+    </div>
+
+    <section class="compare-wrap panel" id="comparador">
+      <div class="compare-head"><div><div class="eyebrow">03 / EXPERIMENTO CONTROLADO</div><h2>Mesma pergunta. Duas IAs.</h2><p>Compare respostas sem histórico: de um lado, nenhuma memória; do outro, os módulos selecionados (se nenhum estiver ativo, todos). A comparação <b>não grava novos dados.</b></p></div><div class="compare-logo">↔</div></div>
+      <form class="compare-form" id="compare-form"><input id="compare-question" maxlength="1600" placeholder="Ex.: Qual linguagem eu prefiro para exemplos?" /><button class="button primary" id="compare-button" type="submit">Comparar modos <span>↗</span></button></form>
+      <div class="comparison-grid" id="comparison-results"><div class="comparison-placeholder"><span>↔</span> Faça uma pergunta para visualizar a diferença entre uma IA sem memória e uma com memória.</div></div>
+    </section>
+    <section class="panel compare-wrap arena" id="model-arena">
+      <div class="compare-head"><div><div class="eyebrow">04 / ARENA DE MODELOS · OLLAMA REAL</div><h2>Quem responde melhor?</h2><p>Escolha de 2 a 4 modelos. Todos recebem exatamente a mesma pergunta e o mesmo contexto dos módulos ativos, sem histórico nem criação de memórias. Se nenhum módulo estiver ativo, todos respondem sem memória modular.</p></div><div class="compare-logo">⚡</div></div>
+      <form id="arena-form"><div class="arena-models" id="arena-models"><p class="muted-note">Detectando modelos locais...</p></div><label class="arena-label" for="arena-manual">Adicionar modelos manualmente (separe por vírgula)</label><input id="arena-manual" placeholder="ex.: llama3.2:3b, qwen3:4b" maxlength="410"/><div class="arena-config" id="arena-context">Contexto: sem memória modular</div><div class="compare-form"><input id="arena-question" maxlength="1600" required placeholder="Digite a pergunta para todos os modelos"/><button id="arena-button" class="button primary" type="submit">Iniciar duelo ↗</button></div></form>
+      <div id="arena-results" class="comparison-grid"><div class="comparison-placeholder">As respostas, latências e taxas de geração aparecerão aqui.</div></div><p class="muted-note arena-note">Execução sequencial para reduzir disputa por RAM/VRAM. A latência inclui carregamento; tokens/s considera a geração reportada pelo Ollama. Compare também a qualidade das respostas.</p>
+    </section>
+    <footer><span>Clean BOT Lab <span class="footer-dot">✦</span> Projeto educacional • memória de trabalho em RAM • longa duração em SQLite</span><span>Rode localmente · <a href="https://docs.ollama.com/" target="_blank" rel="noopener">Documentação Ollama ↗</a></span></footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="guide-dialog"><button class="dialog-x" id="close-guide" aria-label="Fechar guia">×</button><div class="eyebrow">GUIA PARA A PALESTRA</div><h2>Demonstre o agente em 4 etapas</h2><ol><li><strong>Clique em “Carregar cenário de exemplo”.</strong> Os quatro tipos aparecem no painel da direita.</li><li><strong>Escolha “Sem memória”</strong> e pergunte “Qual linguagem eu prefiro?”. O agente não acessará o banco.</li><li><strong>Ative “Semântica”</strong> e repita a pergunta. O agente recuperará uma preferência armazenada.</li><li><strong>Use “Mesma pergunta. Duas IAs”.</strong> Veja as duas respostas lado a lado com o mesmo texto e sem histórico.</li></ol><p>Para uma demonstração com LLM real, escolha Ollama no painel esquerdo e selecione um modelo previamente baixado. O modo “Simulação didática” não chama um modelo.</p><p><strong>Observação:</strong> a memória de trabalho desaparece ao começar uma nova sessão ou reiniciar o aplicativo; as demais ficam em SQLite.</p><button class="button primary wide" id="guide-ok">Entendi, vamos experimentar</button></dialog>
+</body>
+</html>
